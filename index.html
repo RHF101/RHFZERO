@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 Not Found</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root{
+    --ink:#8a8a8a;
+    --ink-light:#b0b0b0;
+    --bg:#f7f7f6;
+    --border:#e2e2e0;
+    --accent:#4a90d9;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+    text-align:center;
+    margin:0;
+    padding:0;
+    overflow:hidden;
+    height:100vh;
+    position:relative;
+  }
+  .wrap{
+    height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    position:relative; z-index:1;
+  }
+  .face{
+    width:140px; height:140px; margin-bottom:28px;
+    cursor:pointer; user-select:none; -webkit-tap-highlight-color:transparent;
+    transition:transform .15s ease;
+  }
+  .face:active{transform:scale(0.95);}
+  .face svg{width:100%; height:100%; display:block;}
+
+  .code{
+    font-size:64px;
+    font-weight:400;
+    color:#6b6b6b;
+    margin:0 0 10px;
+    letter-spacing:2px;
+  }
+  .title{
+    font-size:22px;
+    font-weight:400;
+    color:var(--ink-light);
+    margin:0 0 22px;
+  }
+  .desc{
+    font-size:13px;
+    color:#a8a8a6;
+    line-height:1.7;
+    max-width:420px;
+    margin:0 auto;
+  }
+  .desc a{color:var(--accent); text-decoration:none;}
+  .desc a:hover{text-decoration:underline;}
+
+  .progress-dots{
+    display:flex; gap:7px; margin-top:24px; height:6px;
+  }
+  .dot{
+    width:6px; height:6px; border-radius:50%;
+    background:#dcdcda;
+    transition:background .2s, transform .2s;
+  }
+  .dot.on{background:#4a90d9; transform:scale(1.3);}
+
+  /* ---------- bottom gate: slides up, transparent panel ---------- */
+  #gate{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    transform:translateY(100%);
+    transition:transform .45s cubic-bezier(.2,.9,.25,1);
+    z-index:10;
+    background:rgba(255,255,255,0.55);
+    backdrop-filter:blur(18px) saturate(140%);
+    -webkit-backdrop-filter:blur(18px) saturate(140%);
+    border-top:1px solid rgba(0,0,0,0.06);
+    box-shadow:0 -10px 40px rgba(0,0,0,0.08);
+    padding:26px 20px 30px;
+  }
+  #gate.show{ transform:translateY(0); }
+
+  #gate .inner{
+    max-width:420px; margin:0 auto; text-align:left;
+  }
+  #gate .icon-row{display:flex; align-items:center; gap:9px; margin-bottom:5px;}
+  #gate .icon-row svg{width:16px; height:16px; stroke:#6b6b6b; flex-shrink:0;}
+  #gate h2{
+    margin:0; font-size:14.5px; letter-spacing:0.3px; font-weight:600; color:#4a4a4a;
+  }
+  #gate p.sub{
+    color:#9a9a98; font-size:12px; margin:4px 0 16px; line-height:1.5;
+  }
+
+  .field-label{
+    display:flex; align-items:center; gap:6px;
+    font-size:10.5px; color:#a0a0a0; margin-bottom:6px; letter-spacing:0.4px; font-weight:600;
+    text-transform:uppercase;
+  }
+  input{
+    background:rgba(255,255,255,0.7);
+    border:1px solid rgba(0,0,0,0.1);
+    color:#4a4a4a;
+    padding:12px 13px;
+    width:100%;
+    font-family:'Segoe UI', system-ui, sans-serif;
+    font-size:14px;
+    border-radius:9px;
+    margin-bottom:12px;
+    letter-spacing:1.5px;
+    outline:none;
+    transition:border-color .2s, box-shadow .2s, background .2s;
+  }
+  input:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(74,144,217,0.12); background:rgba(255,255,255,0.95);}
+  input::placeholder{color:#c2c2c0; letter-spacing:1px;}
+
+  .remember-row{
+    display:flex; align-items:center; gap:9px; margin-bottom:16px; cursor:pointer; user-select:none;
+  }
+  .checkbox{
+    width:17px; height:17px; border:1.5px solid rgba(0,0,0,0.15); border-radius:5px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    background:rgba(255,255,255,0.6);
+    transition:background .15s, border-color .15s;
+  }
+  .checkbox.checked{background:var(--accent); border-color:var(--accent);}
+  .checkbox svg{width:11px; height:11px; opacity:0; transition:opacity .1s;}
+  .checkbox.checked svg{opacity:1;}
+  .remember-row span{font-size:12px; color:#9a9a98;}
+
+  button.primary{
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    padding:12px 20px;
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:0.3px;
+    cursor:pointer;
+    width:100%;
+    border-radius:9px;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:filter .15s, transform .1s;
+  }
+  button.primary:hover{filter:brightness(1.06);}
+  button.primary:active{transform:scale(0.98);}
+  button.primary:disabled{opacity:0.45; cursor:not-allowed; filter:none;}
+
+  .status-msg{
+    font-size:11.5px; margin-top:11px; text-align:center; min-height:16px;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+  }
+  .status-msg.error{color:#d9534f;}
+  .status-msg.ok{color:#3fa46a;}
+  .status-msg.wait{color:#9a9a98;}
+
+  .spinner{
+    width:13px; height:13px; border:2px solid rgba(74,144,217,0.2); border-top-color:var(--accent);
+    border-radius:50%; animation:spin .6s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .close-gate{
+    position:absolute; top:14px; right:16px; background:none; border:none;
+    color:#b0b0b0; font-size:20px; cursor:pointer; line-height:1; padding:4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="face" id="faceIcon">
+    <svg viewBox="0 0 100 100" fill="none" stroke="#8a8a8a" stroke-width="3.5">
+      <circle cx="50" cy="50" r="42"/>
+      <circle cx="36" cy="42" r="4.2" fill="#8a8a8a" stroke="none"/>
+      <circle cx="64" cy="42" r="4.2" fill="#8a8a8a" stroke="none"/>
+      <path d="M32 68 Q50 52 68 68" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <div class="code">404</div>
+  <div class="title">Page not found</div>
+  <div class="desc">
+    The page you are looking for doesn't exist or an other error occurred.<br>
+    <a href="#" onclick="return false;">Go back</a>, or head over to <a href="#" onclick="return false;">home</a> to choose a new direction.
+  </div>
+
+  <div class="progress-dots" id="dots">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+</div>
+
+<div id="gate">
+  <button class="close-gate" id="closeGate">&times;</button>
+  <div class="inner">
+    <div class="icon-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 118 0v4"/></svg>
+      <h2>Restricted Access</h2>
+    </div>
+    <p class="sub">Masukkan kode akses satu kali yang diberikan admin. Kode kedaluwarsa setelah digunakan atau melewati batas waktu.</p>
+
+    <div class="field-label">Access Code</div>
+    <input type="text" id="codeInput" placeholder="XXXX-XXXX-XXXX" maxlength="20" autocomplete="off" spellcheck="false">
+
+    <div class="remember-row" id="rememberRow">
+      <div class="checkbox" id="rememberBox">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 12l5 5L19 7"/></svg>
+      </div>
+      <span>Ingat perangkat ini selama 12 jam</span>
+    </div>
+
+    <button class="primary" id="verifyBtn" onclick="verifyCode()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      Verifikasi
+    </button>
+
+    <div class="status-msg" id="statusMsg"></div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import { getDatabase, ref, get, set, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+  import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCpcTgKGVavgPa0ymUrmAvEBpuJyPJBMOs",
+    authDomain: "rhf-zero-7b9c4.firebaseapp.com",
+    databaseURL: "https://rhf-zero-7b9c4-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "rhf-zero-7b9c4",
+    storageBucket: "rhf-zero-7b9c4.firebasestorage.app",
+    messagingSenderId: "618217684265",
+    appId: "1:618217684265:web:bb77268b58ec702e328b38",
+    measurementId: "G-BEGQRYXZ5F"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
+
+  // ---------- already-verified session shortcut ----------
+  const savedToken = localStorage.getItem('rhf_session');
+  const savedExpiry = parseInt(localStorage.getItem('rhf_session_expiry') || '0', 10);
+  if (savedToken && savedExpiry > Date.now()) {
+    window.location.href = "dashboard.html";
+  }
+
+  // ---------- click-to-reveal gate (5 clicks on the face) ----------
+  let clickCount = 0;
+  const faceEl = document.getElementById('faceIcon');
+  const dots = document.querySelectorAll('.dot');
+  const gateEl = document.getElementById('gate');
+
+  faceEl.addEventListener('click', () => {
+    if (clickCount >= 5) return;
+    clickCount++;
+    if (dots[clickCount-1]) dots[clickCount-1].classList.add('on');
+    if (clickCount >= 5) {
+      setTimeout(()=>{ gateEl.classList.add('show'); }, 150);
+    }
+  });
+
+  document.getElementById('closeGate').addEventListener('click', () => {
+    gateEl.classList.remove('show');
+    clickCount = 0;
+    dots.forEach(d => d.classList.remove('on'));
+  });
+
+  // ---------- remember checkbox ----------
+  let remember = true;
+  const rememberBox = document.getElementById('rememberBox');
+  rememberBox.classList.add('checked');
+  document.getElementById('rememberRow').addEventListener('click', () => {
+    remember = !remember;
+    rememberBox.classList.toggle('checked', remember);
+  });
+
+  // ---------- rate limiting (client-side deterrent) ----------
+  const ATTEMPT_KEY = 'rhf_attempts';
+  const LOCK_KEY = 'rhf_lock_until';
+  const MAX_ATTEMPTS = 5;
+  const LOCK_DURATION_MS = 3 * 60 * 1000; // 3 minutes
+
+  function getAttempts(){ return parseInt(localStorage.getItem(ATTEMPT_KEY) || '0', 10); }
+  function setAttempts(n){ localStorage.setItem(ATTEMPT_KEY, String(n)); }
+  function isLocked(){
+    const until = parseInt(localStorage.getItem(LOCK_KEY) || '0', 10);
+    return until > Date.now() ? until : 0;
+  }
+  function triggerLock(){
+    localStorage.setItem(LOCK_KEY, String(Date.now() + LOCK_DURATION_MS));
+    setAttempts(0);
+  }
+
+  const statusMsg = document.getElementById('statusMsg');
+  const verifyBtn = document.getElementById('verifyBtn');
+  const codeInput = document.getElementById('codeInput');
+
+  function setStatus(text, type){
+    statusMsg.className = 'status-msg ' + (type || '');
+    statusMsg.innerHTML = text;
+  }
+
+  function checkLockUI(){
+    const until = isLocked();
+    if (until) {
+      verifyBtn.disabled = true;
+      const remain = Math.ceil((until - Date.now())/1000);
+      setStatus(`Terlalu banyak percobaan. Coba lagi dalam ${remain}s`, 'error');
+      setTimeout(checkLockUI, 1000);
+      return true;
+    }
+    verifyBtn.disabled = false;
+    return false;
+  }
+  checkLockUI();
+
+  window.verifyCode = async function() {
+    if (checkLockUI()) return;
+
+    const code = codeInput.value.trim().toUpperCase();
+    if (code.length < 6) {
+      setStatus('Kode terlalu pendek.', 'error');
+      return;
+    }
+
+    verifyBtn.disabled = true;
+    setStatus('<div class="spinner"></div> Memverifikasi...', 'wait');
+
+    try {
+      await signInAnonymously(auth).catch(()=>{});
+
+      const codeRef = ref(db, 'accessCodes/' + code);
+
+      const result = await runTransaction(codeRef, (current) => {
+        if (current === null) return current;
+        if (current.used === true) return;
+        const now = Date.now();
+        if (current.expiresAt && now > current.expiresAt) return;
+        current.used = true;
+        current.usedAt = now;
+        return current;
+      });
+
+      if (!result.committed || !result.snapshot.exists()) {
+        const attempts = getAttempts() + 1;
+        setAttempts(attempts);
+        if (attempts >= MAX_ATTEMPTS) {
+          triggerLock();
+          checkLockUI();
+        } else {
+          setStatus(`Kode invalid, kedaluwarsa, atau sudah dipakai. (${MAX_ATTEMPTS - attempts} percobaan tersisa)`, 'error');
+          verifyBtn.disabled = false;
+        }
+        return;
+      }
+
+      setAttempts(0);
+      const sessionToken = crypto.randomUUID();
+      const durationMs = remember ? (12 * 60 * 60 * 1000) : (60 * 60 * 1000);
+      const expiry = Date.now() + durationMs;
+
+      await set(ref(db, 'sessions/' + sessionToken), {
+        createdAt: serverTimestamp(),
+        expiresAt: expiry,
+        uid: auth.currentUser ? auth.currentUser.uid : null
+      }).catch(()=>{});
+
+      localStorage.setItem('rhf_session', sessionToken);
+      localStorage.setItem('rhf_session_expiry', String(expiry));
+
+      setStatus('Akses diberikan. Mengalihkan...', 'ok');
+      setTimeout(()=>{ window.location.href = "dashboard.html"; }, 500);
+
+    } catch (e) {
+      setStatus('Error koneksi. Coba lagi.', 'error');
+      verifyBtn.disabled = false;
+    }
+  };
+
+  codeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') verifyCode(); });
+
+  // ---------- basic anti-inspection deterrents (not real security) ----------
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'F12' ||
+       (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+       (e.ctrlKey && e.key.toUpperCase() === 'U')) {
+      e.preventDefault();
+    }
+  });
+</script>
+</body>
+</html>
